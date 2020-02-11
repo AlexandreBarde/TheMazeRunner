@@ -10,64 +10,69 @@ class WindowMaze(object):
     def __init__(self, data):
         self._window = Tk()
         self._window.wm_title("The Maze Runner")
-        self._window.maxsize(width=400, height=400)
-        self._window.minsize(width=400, height=400)
+        self._window.maxsize(width=450, height=450)
+        self._window.minsize(width=450, height=450)
         self._window.iconbitmap('')
         self._data = data
         self._walls = []
         self._runners = []
         self._pop = []
+        self._pop_save = []
+        self._end = []
         print(data)
 
         def callback():
             individu_mort_pop = []
             individu_mort_runners = []
-            print("Pop à l'instant T : ")
-            print(self._pop)
-            for i in range(len(self._pop)):
-                print("Item n°" + str(i))
-                print(self._pop[i])
-                nbr = random.randint(0, 3)
-                if nbr == 0:  # à droite
-                    self._canvas.move(self._pop[i], 40, 0)
-                    self._runners[i].new_pos(self._canvas.coords(self._pop[i]))
-                    if not (self._runners[i]).get_is_alive():
-                        individu_mort_pop.append(self._pop[i])
-                        individu_mort_runners.append(self._runners[i])
-                        # Si on supprime les individus lorsque la boucle tourne on a un out of index => logique
-                        #self._pop.remove(self._pop[i])
-                        #self._runners.remove(self._runners[i])
+            print("Nombre d'individus dans la population actuellement : " + str(len(self._pop)))
+            if len(self._pop) == 0:
+                print("Tous les individus sont morts, calcul de la fitness : ")
+                for i in range(len(self._pop_save)):
+                    print("Individu n°" + str(i) + " : " + str(self._pop_save[i].get_nbr_moves()))
+            else:
+                for i in range(len(self._pop)):
+                    print("Item n°" + str(i))
+                    print(self._pop[i])
+                    nbr = random.randint(0, 3)
+                    if nbr == 0:  # à droite
+                        self._canvas.move(self._pop[i], 40, 0)
+                        self._runners[i].new_pos(self._canvas.coords(self._pop[i]))
+                        if not (self._runners[i]).get_is_alive():
+                            individu_mort_pop.append(self._pop[i])
+                            individu_mort_runners.append(self._runners[i])
+                            # Si on supprime les individus lorsque la boucle tourne on a un out of index => logique
+                            #self._pop.remove(self._pop[i])
+                            #self._runners.remove(self._runners[i])
 
+                            # print(self._canvas.coords(self._balle))
+                    elif nbr == 1:  # en bas
+                        self._canvas.move(self._pop[i], 0, -40)
+                        self._runners[i].new_pos(self._canvas.coords(self._pop[i]))
+                        if not (self._runners[i]).get_is_alive():
+                            individu_mort_pop.append(self._pop[i])
+                            individu_mort_runners.append(self._runners[i])
                         # print(self._canvas.coords(self._balle))
-                elif nbr == 1:  # en bas
-                    self._canvas.move(self._pop[i], 0, -40)
-                    self._runners[i].new_pos(self._canvas.coords(self._pop[i]))
-                    if not (self._runners[i]).get_is_alive():
-                        individu_mort_pop.append(self._pop[i])
-                        individu_mort_runners.append(self._runners[i])
-                    # print(self._canvas.coords(self._balle))
-                elif nbr == 2:  # à gauche
-                    self._canvas.move(self._pop[i], -40, 0)
-                    self._runners[i].new_pos(self._canvas.coords(self._pop[i]))
-                    if not (self._runners[i]).get_is_alive():
-                        individu_mort_pop.append(self._pop[i])
-                        individu_mort_runners.append(self._runners[i])
-                    # print(self._canvas.coords(self._balle))
-                elif nbr == 3:  # en haut
-                    self._canvas.move(self._pop[i], 0, 40)
-                    self._runners[i].new_pos(self._canvas.coords(self._pop[i]))
-                    if not (self._runners[i]).get_is_alive():
-                        individu_mort_pop.append(self._pop[i])
-                        individu_mort_runners.append(self._runners[i])
-                    # print(self._canvas.coords(self._balle))
+                    elif nbr == 2:  # à gauche
+                        self._canvas.move(self._pop[i], -40, 0)
+                        self._runners[i].new_pos(self._canvas.coords(self._pop[i]))
+                        if not (self._runners[i]).get_is_alive():
+                            individu_mort_pop.append(self._pop[i])
+                            individu_mort_runners.append(self._runners[i])
+                        # print(self._canvas.coords(self._balle))
+                    elif nbr == 3:  # en haut
+                        self._canvas.move(self._pop[i], 0, 40)
+                        self._runners[i].new_pos(self._canvas.coords(self._pop[i]))
+                        if not (self._runners[i]).get_is_alive():
+                            individu_mort_pop.append(self._pop[i])
+                            individu_mort_runners.append(self._runners[i])
+                        # print(self._canvas.coords(self._balle))
 
                 # Traitements des individus morts => CHEH
+                for i in range(len(individu_mort_pop)):
+                    self._pop.remove(individu_mort_pop[i])
 
-            for i in range(len(individu_mort_pop)):
-                self._pop.remove(individu_mort_pop[i])
-
-            for i in range(len(individu_mort_runners)):
-                self._runners.remove(individu_mort_runners[i])
+                for i in range(len(individu_mort_runners)):
+                    self._runners.remove(individu_mort_runners[i])
 
         canvas = Canvas(self._window)
         canvas.config(width=400, height=400)
@@ -85,33 +90,22 @@ class WindowMaze(object):
             print(chars[i])
             line_tmp = list(chars[i])
             for j in range(len(line_tmp)):
+                x_start = 40 * j
+                y_start = 40 * i
+                x_end = (40 * j) + 40
+                y_end = (40 * i) + 40
                 if line_tmp[j] == "1":  # duplication de code à virer (pos)
-                    x_start = 40 * j
-                    y_start = 40 * i
-                    x_end = (40 * j) + 40
-                    y_end = (40 * i) + 40
                     self._walls.append(str(x_start) + ":" + str(y_start) + " " + str(x_end) + ":" + str(y_end))
                     # print("pos : " + str(i) + ":" + str(j) + " => x_start : " + str(x_start) + " x_end : " + str(
                     # x_end) + " y_start : " + str(y_start) + " y_end : " + str(y_end))
                     canvas.create_rectangle(x_start, y_start, x_end, y_end, outline="#474747", fill="#66545e")
                 elif line_tmp[j] == "0":
-                    x_start = 40 * j
-                    y_start = 40 * i
-                    x_end = (40 * j) + 40
-                    y_end = (40 * i) + 40
                     canvas.create_rectangle(x_start, y_start, x_end, y_end, outline="#474747", fill="#a39193")
                 elif line_tmp[j] == "2":
-                    x_start = 40 * j
-                    y_start = 40 * i
-                    x_end = (40 * j) + 40
-                    y_end = (40 * i) + 40
                     canvas.create_rectangle(x_start, y_start, x_end, y_end, outline="#474747", fill="#eea990")
                 elif line_tmp[j] == "3":
-                    x_start = 40 * j
-                    y_start = 40 * i
-                    x_end = (40 * j) + 40
-                    y_end = (40 * i) + 40
                     canvas.create_rectangle(x_start, y_start, x_end, y_end, outline="#474747", fill="#f6e0b5")
+                    self._end = [x_start, y_start, x_end, y_end]
 
         self._canvas = canvas
         canvas.pack()
@@ -123,7 +117,9 @@ class WindowMaze(object):
     def _create_(self):
         for i in range(self._nbr_pop):
             self._pop.append(self._canvas.create_oval(90, 50, 110, 70, outline="#474747", fill=self._get_random_color()))
-            self._runners.append(Runner(90, 50, 110, 70, self._walls))
+            runner = Runner(90, 50, 110, 70, self._walls)
+            self._runners.append(runner)
+            self._pop_save.append(runner)
             # self._move_(balle)
 
         print("Taille de la population : " + str(len(self._pop)))
