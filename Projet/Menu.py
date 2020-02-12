@@ -1,3 +1,5 @@
+from operator import methodcaller, attrgetter
+from threading import Timer
 from tkinter import Tk, Canvas, Button
 import time
 import random
@@ -19,68 +21,136 @@ class WindowMaze(object):
         self._pop = []
         self._pop_save = []
         self._end = []
+        self._num_generation = 0
         print(data)
+
+        def gestion():
+
+            self._window.update()
+            time.sleep(0.5)
+            callback()
 
         def callback():
             individu_mort_pop = []
             individu_mort_runners = []
             print("Nombre d'individus dans la population actuellement : " + str(len(self._pop)))
             if len(self._pop) == 0:
+                self._num_generation = self._num_generation + 1
                 print("Tous les individus sont morts, calcul de la fitness : ")
+                array_sorted = []
                 for i in range(len(self._pop_save)):
                     print("Individu n°" + str(i) + " : " + str(self._pop_save[i].get_nbr_moves()))
+                    print("Positions du l'individu n°" + str(i) + str(self._pop_save[i].get_directions()))
+                    array_sorted = sorted(self._pop_save, key=attrgetter('_nbr_move'), reverse=True)
+                print("Liste triée : ")
+                for j in range(len(array_sorted)):
+                    print("Individu n°" + str(j) + " - Nombre déplacements : " + str(array_sorted[j].get_nbr_moves()) + " : " + str(array_sorted[j].get_directions()))
+                new_pop = array_sorted[:round(len(array_sorted) / 2)]
+                print("Nouvelle population")
+                self._runners = new_pop
+                # on a une liste de la moitié de la taille de la population (dans ce cas 25)
+                # cette liste contient des individus qui ont avancés de qqls cases (les premiers de la liste qui est trié par nombre de déplacements)
+
+                # il faut donc alors compléter cette liste avec des nouveaux individus (la moitié de la liste donc)
+                for i in range(len(self._runners) - 1, self._nbr_pop - 1):
+                    self._runners.append(Runner(90, 50, 110, 70, self._walls))
+
+                print("[] Nouvelle génération ...")
+                print("Taille de _pop : " + str(len(self._pop)))
+                print("Taille de runners : " + str(len(self._runners)))
+                print("Taille de pop_save : " + str(len(self._pop_save)))
+                self._generate_square(canvas)
+                self._create_()
             else:
-                for i in range(len(self._pop)):
-                    print("Item n°" + str(i))
-                    print(self._pop[i])
-                    nbr = random.randint(0, 3)
-                    if nbr == 0:  # à droite
-                        self._canvas.move(self._pop[i], 40, 0)
-                        self._runners[i].new_pos(self._canvas.coords(self._pop[i]))
-                        if not (self._runners[i]).get_is_alive():
-                            individu_mort_pop.append(self._pop[i])
-                            individu_mort_runners.append(self._runners[i])
-                            # Si on supprime les individus lorsque la boucle tourne on a un out of index => logique
-                            #self._pop.remove(self._pop[i])
-                            #self._runners.remove(self._runners[i])
+                if self._num_generation == 0:
+                    for i in range(len(self._pop)):
+                        print("Item n°" + str(i))
+                        print(self._pop[i])
+                        nbr = random.randint(0, 3)
+                        if nbr == 0:  # à droite
+                            self._canvas.move(self._pop[i], 40, 0)
+                            self._runners[i].new_pos(self._canvas.coords(self._pop[i]), 0)
+                            if not (self._runners[i]).get_is_alive():
+                                individu_mort_pop.append(self._pop[i])
+                                individu_mort_runners.append(self._runners[i])
+                                # Si on supprime les individus lorsque la boucle tourne on a un out of index => logique
+                                # self._pop.remove(self._pop[i])
+                                # self._runners.remove(self._runners[i])
 
+                                # print(self._canvas.coords(self._balle))
+                        elif nbr == 1:  # en bas
+                            self._canvas.move(self._pop[i], 0, -40)
+                            self._runners[i].new_pos(self._canvas.coords(self._pop[i]), 1)
+                            if not (self._runners[i]).get_is_alive():
+                                individu_mort_pop.append(self._pop[i])
+                                individu_mort_runners.append(self._runners[i])
                             # print(self._canvas.coords(self._balle))
-                    elif nbr == 1:  # en bas
-                        self._canvas.move(self._pop[i], 0, -40)
-                        self._runners[i].new_pos(self._canvas.coords(self._pop[i]))
-                        if not (self._runners[i]).get_is_alive():
-                            individu_mort_pop.append(self._pop[i])
-                            individu_mort_runners.append(self._runners[i])
-                        # print(self._canvas.coords(self._balle))
-                    elif nbr == 2:  # à gauche
-                        self._canvas.move(self._pop[i], -40, 0)
-                        self._runners[i].new_pos(self._canvas.coords(self._pop[i]))
-                        if not (self._runners[i]).get_is_alive():
-                            individu_mort_pop.append(self._pop[i])
-                            individu_mort_runners.append(self._runners[i])
-                        # print(self._canvas.coords(self._balle))
-                    elif nbr == 3:  # en haut
-                        self._canvas.move(self._pop[i], 0, 40)
-                        self._runners[i].new_pos(self._canvas.coords(self._pop[i]))
-                        if not (self._runners[i]).get_is_alive():
-                            individu_mort_pop.append(self._pop[i])
-                            individu_mort_runners.append(self._runners[i])
-                        # print(self._canvas.coords(self._balle))
+                        elif nbr == 2:  # à gauche
+                            self._canvas.move(self._pop[i], -40, 0)
+                            self._runners[i].new_pos(self._canvas.coords(self._pop[i]), 2)
+                            if not (self._runners[i]).get_is_alive():
+                                individu_mort_pop.append(self._pop[i])
+                                individu_mort_runners.append(self._runners[i])
+                            # print(self._canvas.coords(self._balle))
+                        elif nbr == 3:  # en haut
+                            self._canvas.move(self._pop[i], 0, 40)
+                            self._runners[i].new_pos(self._canvas.coords(self._pop[i]), 3)
+                            if not (self._runners[i]).get_is_alive():
+                                individu_mort_pop.append(self._pop[i])
+                                individu_mort_runners.append(self._runners[i])
+                            # print(self._canvas.coords(self._balle))
 
-                # Traitements des individus morts => CHEH
-                for i in range(len(individu_mort_pop)):
-                    self._pop.remove(individu_mort_pop[i])
+                    # Traitements des individus morts => CHEH
+                    for i in range(len(individu_mort_pop)):
+                        self._pop.remove(individu_mort_pop[i])
 
-                for i in range(len(individu_mort_runners)):
-                    self._runners.remove(individu_mort_runners[i])
+                    for i in range(len(individu_mort_runners)):
+                        self._runners.remove(individu_mort_runners[i])
+                else:
+                    print("Nouvelle génération")
+                    for i in range(len(self._pop)):
+                        print("Item n°" + str(i))
+                        print(self._pop[i])
+                        nbr = random.randint(0, 3)
+                        if nbr == 0:  # à droite
+                            self._canvas.move(self._pop[i], 40, 0)
+                            self._runners[i].new_pos(self._canvas.coords(self._pop[i]), 0)
+                            if not (self._runners[i]).get_is_alive():
+                                individu_mort_pop.append(self._pop[i])
+                                individu_mort_runners.append(self._runners[i])
+                        elif nbr == 1:  # en bas
+                            self._canvas.move(self._pop[i], 0, -40)
+                            self._runners[i].new_pos(self._canvas.coords(self._pop[i]), 1)
+                            if not (self._runners[i]).get_is_alive():
+                                individu_mort_pop.append(self._pop[i])
+                                individu_mort_runners.append(self._runners[i])
+                        elif nbr == 2:  # à gauche
+                            self._canvas.move(self._pop[i], -40, 0)
+                            self._runners[i].new_pos(self._canvas.coords(self._pop[i]), 2)
+                            if not (self._runners[i]).get_is_alive():
+                                individu_mort_pop.append(self._pop[i])
+                                individu_mort_runners.append(self._runners[i])
+                        elif nbr == 3:  # en haut
+                            self._canvas.move(self._pop[i], 0, 40)
+                            self._runners[i].new_pos(self._canvas.coords(self._pop[i]), 3)
+                            if not (self._runners[i]).get_is_alive():
+                                individu_mort_pop.append(self._pop[i])
+                                individu_mort_runners.append(self._runners[i])
+
+                    for i in range(len(individu_mort_pop)):
+                        self._pop.remove(individu_mort_pop[i])
+
+                    for i in range(len(individu_mort_runners)):
+                        self._runners.remove(individu_mort_runners[i])
+            gestion()
 
         canvas = Canvas(self._window)
         canvas.config(width=400, height=400)
-        b = Button(self._window, text="Play", command=callback)
+        b = Button(self._window, text="Play", command=gestion)
         b.pack()
         self._canvas = canvas
         self._generate_square(canvas)
-        self._nbr_pop = 5  # nombre d'individu dans une population
+        self._nbr_pop = 50  # nombre d'individu dans une population
         self._create_()
 
     def _generate_square(self, canvas):
@@ -117,9 +187,10 @@ class WindowMaze(object):
     def _create_(self):
         for i in range(self._nbr_pop):
             self._pop.append(self._canvas.create_oval(90, 50, 110, 70, outline="#474747", fill=self._get_random_color()))
-            runner = Runner(90, 50, 110, 70, self._walls)
-            self._runners.append(runner)
-            self._pop_save.append(runner)
+            if not len(self._runners) == self._nbr_pop:
+                runner = Runner(90, 50, 110, 70, self._walls)
+                self._runners.append(runner)
+                self._pop_save.append(runner)
             # self._move_(balle)
 
         print("Taille de la population : " + str(len(self._pop)))

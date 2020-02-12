@@ -8,7 +8,7 @@ class Runner(object):
         self._is_alive = True
         self._walls = walls
         self._nbr_move = 0
-        # stocker les diffs pos où est allé le point ?
+        self._genes = []
 
     def get_is_alive(self):
         return self._is_alive
@@ -27,7 +27,8 @@ class Runner(object):
         else:
             print("check : " + str(x1) + ":" + str(y1) + " " + str(x2) + ":" + str(y2))
 
-    def new_pos(self, new_pos):
+    def new_pos(self, new_pos, direction):
+        self._genes.append(direction)
         self._nbr_move = self._nbr_move + 1
         self._set_pos_x1(int(new_pos[0]))
         self._set_pos_y1(int(new_pos[1]))
@@ -37,6 +38,9 @@ class Runner(object):
         print(self._check_is_alive())
         print("Vivant ? " + str(self.get_is_alive()))
         print("_______________")
+
+    def get_directions(self):
+        return self._genes
 
     def get_nbr_moves(self):
         return self._nbr_move
