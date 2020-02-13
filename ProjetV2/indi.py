@@ -27,6 +27,9 @@ class Runner(object):
         else:
             return
 
+    def set_alive(self):
+        self._is_alive = True
+
     def new_pos(self, new_pos_var, direction):
         self._genes.append(direction)
         self._nbr_move = len(self._genes)
