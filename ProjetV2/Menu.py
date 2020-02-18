@@ -19,7 +19,6 @@ class WindowMaze(object):
         self._walls = []
         self._runners = [] # liste qui stocke les runners (objet)
         self._pop = [] # liste qui stocke les ronds (canvas)
-        self._pop_save = []
         self._end = []
         self._num_generation = 0
         self._iteration = 0
@@ -29,7 +28,7 @@ class WindowMaze(object):
 
         def gestion():
             self._window.update()
-            time.sleep(1)
+            time.sleep(0.1)
             callback()
 
         def callback():
@@ -40,18 +39,21 @@ class WindowMaze(object):
 
                 population_sorted = [] # liste d'individus qui sont triés par leur nombre de déplacements (fitness)
 
-                for i in range(len(self._pop_save)):
-                    population_sorted = sorted(self._pop_save, key=attrgetter('_nbr_move'), reverse=True) # permet de trier la liste en fonction du paramètre "nbr_move" de chaque individus
+                for i in range(len(self._runners)):
+                    population_sorted = sorted(self._runners, key=attrgetter('_nbr_move'), reverse=True) # permet de trier la liste en fonction du paramètre "nbr_move" de chaque individus
 
                 print("Population non triée : ")
-                for j in range(len(self._pop_save)):
-                    print("Individu n°" + str(j) + " - Nombre déplacements : " + str(self._pop_save[j].get_nbr_moves()) + " : " + str(self._pop_save[j].get_directions()))
+                for j in range(len(self._runners)):
+                    print("Individu n°" + str(j) + " - Nombre déplacements : " + str(self._runners[j].get_nbr_moves()) + " : " + str(self._runners[j].get_directions()))
 
                 print("Population triée : ")
                 for j in range(len(population_sorted)):
                     print("Individu n°" + str(j) + " - Nombre déplacements : " + str(population_sorted[j].get_nbr_moves()) + " : " + str(population_sorted[j].get_directions()))
 
-                new_pop = population_sorted[:round(len(population_sorted) / 2)].copy()  # on garde uniquement la moitié de la population (vu qu'elle est triée, on garde que les x meilleurs)
+                new_pop = population_sorted[:round(len(population_sorted) / 2) - 1].copy()  # on garde uniquement la moitié de la population (vu qu'elle est triée, on garde que les x meilleurs)
+
+                self._runners.clear()
+                self._runners = new_pop
 
                 print("Population avec uniquement les parents : ")
                 for j in range(len(new_pop)):
@@ -59,7 +61,7 @@ class WindowMaze(object):
 
                 self._num_generation = self._num_generation + 1
                 self._nbr_alive = self._nbr_pop
-                self._iteration = self._iteration + 1
+                self._iteration = 0
 
                 print("Nombre de la nouvelle population : " + str(self._nbr_alive))
 
@@ -100,26 +102,45 @@ class WindowMaze(object):
                     for i in range(len(self._pop)):  # on parcourt la liste des ronds
                         print("----------[ITÉRATION N°" + str(self._iteration) + "]----------")  # afichage de la génération
                         if self._runners[i].get_is_alive():  # si l'individu est vivant
-                            # vu que c'est la première génération on génère un nombre aléatoire (gène random)
-                            nbr = random.randint(0, 3)  # chiffre aléatoire entre 0 et 3
-                            if nbr == 0:  # à droite
-                                self._canvas.move(self._pop[i], 0, -40)  # déplacement du rond sur le canvas vers la droite de 40px
-                                self._runners[i].new_pos(self._canvas.coords(self._pop[i]), 0)
-                            elif nbr == 1:  # en bas
-                                self._canvas.move(self._pop[i], 40,0)  # déplacement du rond sur le canvas vers le bas de 40px
-                                self._runners[i].new_pos(self._canvas.coords(self._pop[i]), 1)
-                            elif nbr == 2:  # à gauche
-                                self._canvas.move(self._pop[i], -40,0)  # déplacement du rond sur le canvas vers la gauche de 40px
-                                self._runners[i].new_pos(self._canvas.coords(self._pop[i]), 2)
-                            elif nbr == 3:  # en haut
-                                self._canvas.move(self._pop[i], 0,40)  # déplacement du rond sur le canvas vers le haut de 40px
-                                self._runners[i].new_pos(self._canvas.coords(self._pop[i]), 3)
-                            if not self._runners[i].get_is_alive():  # si l'individu est mort
-                                self._nbr_alive = self._nbr_alive - 1
+                            if len(self._runners[i].get_directions()) > self._iteration:
+                                print("ancien runner")
+                                # vu que c'est la première génération on génère un nombre aléatoire (gène random)
+                                nbr = self._runners[i].get_directions()[self._iteration]  # récupère la direction à la génération précédente
+                                if nbr == 0:  # à droite
+                                    self._canvas.move(self._pop[i], 0, -40)  # déplacement du rond sur le canvas vers la droite de 40px
+                                    self._runners[i].new_pos2(self._canvas.coords(self._pop[i]), 0, self._iteration)
+                                elif nbr == 1:  # en bas
+                                    self._canvas.move(self._pop[i], 40,0)  # déplacement du rond sur le canvas vers le bas de 40px
+                                    self._runners[i].new_pos2(self._canvas.coords(self._pop[i]), 1, self._iteration)
+                                elif nbr == 2:  # à gauche
+                                    self._canvas.move(self._pop[i], -40,0)  # déplacement du rond sur le canvas vers la gauche de 40px
+                                    self._runners[i].new_pos2(self._canvas.coords(self._pop[i]), 2, self._iteration)
+                                elif nbr == 3:  # en haut
+                                    self._canvas.move(self._pop[i], 0,40)  # déplacement du rond sur le canvas vers le haut de 40px
+                                    self._runners[i].new_pos2(self._canvas.coords(self._pop[i]), 3, self._iteration)
+
+                                if not self._runners[i].get_is_alive():  # si l'individu est mort
+                                    self._nbr_alive = self._nbr_alive - 1
+                            else:
+                                print("nouveau runner")
+                                nbr = random.randint(0, 3)  # chiffre aléatoire entre 0 et 3
+                                if nbr == 0:  # à droite
+                                    self._canvas.move(self._pop[i], 0, -40)  # déplacement du rond sur le canvas vers la droite de 40px
+                                    self._runners[i].new_pos(self._canvas.coords(self._pop[i]), 0)
+                                elif nbr == 1:  # en bas
+                                    self._canvas.move(self._pop[i], 40, 0)  # déplacement du rond sur le canvas vers le bas de 40px
+                                    self._runners[i].new_pos(self._canvas.coords(self._pop[i]), 1)
+                                elif nbr == 2:  # à gauche
+                                    self._canvas.move(self._pop[i], -40, 0)  # déplacement du rond sur le canvas vers la gauche de 40px
+                                    self._runners[i].new_pos(self._canvas.coords(self._pop[i]), 2)
+                                elif nbr == 3:  # en haut
+                                    self._canvas.move(self._pop[i], 0, 40)  # déplacement du rond sur le canvas vers le haut de 40px
+                                    self._runners[i].new_pos(self._canvas.coords(self._pop[i]), 3)
+                                if not self._runners[i].get_is_alive():  # si l'individu est mort
+                                    self._nbr_alive = self._nbr_alive - 1
                         else:
                             print(self._runners[i].get_is_alive())
-                            print("chui cuit chef")
-
+                            #print("chui cuit chef")
 
                     self._iteration = self._iteration + 1  # nouvelle itération dans la génération
 
@@ -165,10 +186,10 @@ class WindowMaze(object):
     def _create_(self):
         for i in range(self._nbr_pop):
             self._pop.append(self._canvas.create_oval(90, 50, 110, 70, outline="#474747", fill=self._get_random_color()))
-            if not len(self._runners) == self._nbr_pop:
+            if len(self._runners) <= self._nbr_pop:
                 runner = Runner(90, 50, 110, 70, self._walls)
                 self._runners.append(runner)
-                self._pop_save.append(runner)
+
             # self._move_(balle)
 
         #print("Taille de la population : " + str(len(self._pop)))
