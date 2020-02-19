@@ -1,6 +1,15 @@
+import random
+import sys
+import threading
+
+sys.setrecursionlimit(99999999)
+threading.stack_size(200000000)
+
+
+
 class Runner(object):
 
-    def __init__(self, x1, y1, x2, y2, walls):
+    def __init__(self, x1, y1, x2, y2, walls, end):
         self._pos_x_1 = x1
         self._pos_y_1 = y1
         self._pos_x_2 = x2
@@ -9,13 +18,14 @@ class Runner(object):
         self._walls = walls
         self._nbr_move = 0
         self._genes = []
+        self._end = end
 
     def get_is_alive(self):
         return self._is_alive
 
     def _check_is_alive(self):
         walls = self._walls
-        # on elève 10 en x car le point spawn aux coords 10 10
+        # on enlève 10 en x car le point spawn aux coords 10 10
         x1 = int(self._pos_x_1) - 10
         y1 = int(self._pos_y_1) - 10
         x2 = int(self._pos_x_2) + 10
@@ -71,6 +81,25 @@ class Runner(object):
 
     def _set_pos_y2(self, y2):
         self._pos_y_2 = y2
+
+    def set_last_value(self):
+        nbr = random.randint(0, 3)
+        print("nombre : " + str(nbr))
+        while nbr == self._genes[len(self._genes) - 1]:
+            print("c'était le même qu'avant zebi : ")
+            nbr = random.randint(0, 3)
+        self._genes[len(self._genes) - 1] = nbr
+
+    def is_arrived(self):
+        # on enlève 10 en x car le point spawn aux coords 10 10
+        x1 = int(self._pos_x_1) - 10
+        y1 = int(self._pos_y_1) - 10
+        x2 = int(self._pos_x_2) + 10
+        y2 = int(self._pos_y_2) + 10
+        if x1 == self._end[0] and y1 == self._end[1] and x2 == self._end[2] and y2 == self._end[3]:
+            return True
+        else:
+            return False
 
 
 
