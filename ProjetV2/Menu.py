@@ -31,6 +31,21 @@ def generate_graph(list_fitness, generation, max_fit, min_fit):
 
     plt.show()
 
+def generate_second_graph(list_moves, distance_end, generation):
+    x = np.arange(0, generation, 1)
+    y = list_moves
+
+    y2 = distance_end# prendre avec l'arrivée
+
+
+    fig, ax = plt.subplots(1, figsize=(8, 6))
+    fig.suptitle('Nombre de déplacements au cours du temps', fontsize=15)
+    ax.plot(x, y, color="red", label="Nombre de déplacements")
+    ax.plot(x, y2, color="blue", label="Distance avec l'arrivée")
+
+    ax.legend(loc="lower right", title="Stats au cours du temps", frameon=False)
+
+    plt.show()
 
 
 
@@ -50,6 +65,8 @@ class WindowMaze(object):
         self._fitness_avg = [] # liste qui stocke les moyennes de fitness de chaque generation
         self._fitness_max = [] # liste qui stocke les max de fitness de chaque generation
         self._fitness_min = [] # liste qui stocke les min de fitness de chaque generation
+        self._nbr_moves = [] # liste qui stocke une moyenne de déplacements de chaque génération [à changer ?]
+        self._nbr_distance = []
         self._num_generation = 0
         self._iteration = 0
         self._nbr_pop = 100  # nombre d'individu dans une population
@@ -68,12 +85,16 @@ class WindowMaze(object):
                 print("----------[GÉNERATION N°" + str(self._num_generation) + "]----------") # afichage de la nouvelle génération
 
                 fitness_tmp = 0
+                moves_tmp = 0
                 for runner in self._runners:
                     fitness_tmp = fitness_tmp + runner.getter_fitness()
+                    moves_tmp = moves_tmp + runner.get_nbr_moves()
 
                 fitness_tmp = fitness_tmp / self._nbr_pop
+                moves_tmp = moves_tmp / self._nbr_pop
 
                 self._fitness_avg.append(fitness_tmp)
+                self._nbr_moves.append(moves_tmp)
 
                 print("fitness de la generation : " + str(fitness_tmp))
 
@@ -95,6 +116,7 @@ class WindowMaze(object):
 
                 self._fitness_max.append(new_pop[0].getter_fitness())
                 self._fitness_min.append(population_sorted[len(population_sorted) - 1].getter_fitness())
+                self._nbr_distance.append(new_pop[0].get_distance())
 
                 self._runners.clear()
                 self._runners = new_pop
@@ -117,6 +139,8 @@ class WindowMaze(object):
 
                 self._generate_square(canvas)
                 self._create_()
+
+                gestion()
 
             else:
                 if self._num_generation == 0: # si c'est la première génération
@@ -150,6 +174,7 @@ class WindowMaze(object):
                             if self._runners[i].is_arrived():
                                 messagebox.showinfo("The Maze Runner", "L'individu a trouvé le chemin !\nGénération n°" + str(self._num_generation) + "\nItération n°" + str(self._iteration) + "\n")
                                 generate_graph(self._fitness_avg, self._num_generation, self._fitness_max, self._fitness_min)
+                                generate_second_graph(self._nbr_moves, self._nbr_distance, self._num_generation)
                                 return
                             else:
                                 if len(self._runners[i].get_directions()) > self._iteration:

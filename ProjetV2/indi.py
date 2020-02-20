@@ -127,6 +127,21 @@ class Runner(object):
     def getter_fitness(self):
         return self._fitness
 
+    def get_distance(self):
+        diff_x = self._pos_x_2 - self._pos_x_1
+        diff_y = self._pos_y_2 - self._pos_y_1
+
+        pos_x = diff_x + self._pos_x_1
+        pos_y = diff_y + self._pos_y_1
+
+        diff_x_end = self._end[2] - self._end[0]
+        diff_y_end = self._end[3] - self._end[1]
+
+        pos_x_end = diff_x_end + self._end[0]
+        pos_y_end = diff_y_end + self._end[3]
+
+        distance = round(((pos_x - pos_x_end) ** 2 + (pos_y - pos_y_end) ** 2) / 100)
+        return distance
 
 
 
