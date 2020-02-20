@@ -1,14 +1,37 @@
 import sys
 import threading
-from operator import methodcaller, attrgetter
+from operator import methodcaller, attrgetter, itemgetter
 from threading import Timer
 from tkinter import Tk, Canvas, Button, messagebox
 import time
 import random
+import numpy as np
+import matplotlib.pyplot as plt
 sys.setrecursionlimit(99999999)
 threading.stack_size(200000000)
 
 from ProjetV2.indi import Runner
+
+
+def generate_graph(list_fitness, generation, max_fit, min_fit):
+    x = np.arange(0, generation, 1)
+    y = list_fitness
+
+    y2 = max_fit
+
+    y3 = min_fit
+
+    fig, ax = plt.subplots(1, figsize=(8, 6))
+    fig.suptitle('Fitness au cours du temps', fontsize=15)
+    ax.plot(x, y, color="red", label="Fitness moyenne par gen")
+    ax.plot(x, y2, color="green", label="Fitness max par gen")
+    ax.plot(x, y3, color="blue", label="Fitness min par gen")
+
+    ax.legend(loc="lower right", title="Fitness au cours du temps", frameon=False)
+
+    plt.show()
+
+
 
 
 class WindowMaze(object):
@@ -24,15 +47,18 @@ class WindowMaze(object):
         self._runners = [] # liste qui stocke les runners (objet)
         self._pop = [] # liste qui stocke les ronds (canvas)
         self._end = []
+        self._fitness_avg = [] # liste qui stocke les moyennes de fitness de chaque generation
+        self._fitness_max = [] # liste qui stocke les max de fitness de chaque generation
+        self._fitness_min = [] # liste qui stocke les min de fitness de chaque generation
         self._num_generation = 0
         self._iteration = 0
-        self._nbr_pop = 12  # nombre d'individu dans une population
+        self._nbr_pop = 100  # nombre d'individu dans une population
         self._nbr_alive = self._nbr_pop
         print(data)
 
         def gestion():
             self._window.update()
-            time.sleep(0.1)
+            time.sleep(0.01)
             callback()
 
         def callback():
@@ -41,10 +67,21 @@ class WindowMaze(object):
             if self._nbr_alive == 0: # si toute la population est morte
                 print("----------[GÉNERATION N°" + str(self._num_generation) + "]----------") # afichage de la nouvelle génération
 
+                fitness_tmp = 0
+                for runner in self._runners:
+                    fitness_tmp = fitness_tmp + runner.getter_fitness()
+
+                fitness_tmp = fitness_tmp / self._nbr_pop
+
+                self._fitness_avg.append(fitness_tmp)
+
+                print("fitness de la generation : " + str(fitness_tmp))
+
                 population_sorted = [] # liste d'individus qui sont triés par leur nombre de déplacements (fitness)
 
                 for i in range(len(self._runners)):
-                    population_sorted = sorted(self._runners, key=attrgetter('_nbr_move'), reverse=True) # permet de trier la liste en fonction du paramètre "nbr_move" de chaque individus
+                    self._runners[i].get_fitness()
+                    population_sorted = sorted(self._runners, key=attrgetter('_fitness'), reverse=True) # permet de trier la liste en fonction du paramètre "nbr_move" de chaque individus
 
                 print("Population non triée : ")
                 for j in range(len(self._runners)):
@@ -55,6 +92,9 @@ class WindowMaze(object):
                     print("Individu n°" + str(j) + " - Nombre déplacements : " + str(population_sorted[j].get_nbr_moves()) + " : " + str(population_sorted[j].get_directions()))
 
                 new_pop = population_sorted[:round(len(population_sorted) / 2) - 1].copy()  # on garde uniquement la moitié de la population (vu qu'elle est triée, on garde que les x meilleurs)
+
+                self._fitness_max.append(new_pop[0].getter_fitness())
+                self._fitness_min.append(population_sorted[len(population_sorted) - 1].getter_fitness())
 
                 self._runners.clear()
                 self._runners = new_pop
@@ -109,6 +149,7 @@ class WindowMaze(object):
                         if self._runners[i].get_is_alive():  # si l'individu est vivant
                             if self._runners[i].is_arrived():
                                 messagebox.showinfo("The Maze Runner", "L'individu a trouvé le chemin !\nGénération n°" + str(self._num_generation) + "\nItération n°" + str(self._iteration) + "\n")
+                                generate_graph(self._fitness_avg, self._num_generation, self._fitness_max, self._fitness_min)
                                 return
                             else:
                                 if len(self._runners[i].get_directions()) > self._iteration:
@@ -159,6 +200,8 @@ class WindowMaze(object):
                         else:
                             print(self._runners[i].get_is_alive())
                             #print("chui cuit chef")
+
+                        self._runners[i].get_fitness()
 
                     self._iteration = self._iteration + 1  # nouvelle itération dans la génération
 

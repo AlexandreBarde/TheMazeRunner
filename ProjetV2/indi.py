@@ -19,6 +19,7 @@ class Runner(object):
         self._nbr_move = 0
         self._genes = []
         self._end = end
+        self._fitness = 0
 
     def get_is_alive(self):
         return self._is_alive
@@ -100,6 +101,36 @@ class Runner(object):
             return True
         else:
             return False
+
+    def get_fitness(self):
+        move = self._nbr_move
+        diff_x = self._pos_x_2 - self._pos_x_1
+        diff_y = self._pos_y_2 - self._pos_y_1
+
+        pos_x = diff_x + self._pos_x_1
+        pos_y = diff_y + self._pos_y_1
+
+        diff_x_end =  self._end[2] - self._end[0]
+        diff_y_end = self._end[3] - self._end[1]
+
+        pos_x_end = diff_x_end + self._end[0]
+        pos_y_end = diff_y_end + self._end[3]
+
+        distance = round(((pos_x - pos_x_end) ** 2 + (pos_y - pos_y_end) ** 2) / 100)
+        print("pos x : " + str(pos_x) + " pos y : " + str(pos_y) + " pos_x_end : " + str(pos_x_end) + " pos_y_end : " + str(pos_y_end))
+        print("distance : " + str(distance))
+        print("nombre moves : " + str(move))
+        print("fitness : " + str(distance * move))
+
+        self._fitness = distance * move
+
+    def getter_fitness(self):
+        return self._fitness
+
+
+
+
+
 
 
 
