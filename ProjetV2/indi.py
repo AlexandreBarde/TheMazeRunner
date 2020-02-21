@@ -31,9 +31,7 @@ class Runner(object):
         y1 = int(self._pos_y_1) - 10
         x2 = int(self._pos_x_2) + 10
         y2 = int(self._pos_y_2) + 10
-        #print("Nouvelles coords (check_is_alive) : " + str(x1) + ":" + str(y1) + " " + str(x2) + ":" + str(y2))
         if (str(x1) + ":" + str(y1) + " " + str(x2) + ":" + str(y2)) in walls:
-            #print("L'individu est mort...")
             self._is_alive = False
         else:
             return
@@ -50,10 +48,6 @@ class Runner(object):
         self._set_pos_y2(int(new_pos_var[3]))
         self._check_is_alive()
         self.get_is_alive()
-        #print("Nouvelles coords : " + str(int(new_pos[0])) + ":" + str(int(new_pos[1])) + " " + str(int(new_pos[2])) + ":" + str(int(new_pos[3])))
-        #print(self._check_is_alive())
-        #print("Vivant ? " + str(self.get_is_alive()))
-        #print("_______________")
 
     def new_pos2(self, new_pos_var, direction, i):
         self._genes[i] = direction
@@ -87,7 +81,6 @@ class Runner(object):
         nbr = random.randint(0, 3)
         print("nombre : " + str(nbr))
         while nbr == self._genes[len(self._genes) - 1]:
-            print("c'était le même qu'avant zebi : ")
             nbr = random.randint(0, 3)
         self._genes[len(self._genes) - 1] = nbr
 
@@ -106,22 +99,17 @@ class Runner(object):
         move = self._nbr_move
         diff_x = self._pos_x_2 - self._pos_x_1
         diff_y = self._pos_y_2 - self._pos_y_1
-
         pos_x = diff_x + self._pos_x_1
         pos_y = diff_y + self._pos_y_1
-
         diff_x_end =  self._end[2] - self._end[0]
         diff_y_end = self._end[3] - self._end[1]
-
         pos_x_end = diff_x_end + self._end[0]
         pos_y_end = diff_y_end + self._end[3]
-
         distance = round(((pos_x - pos_x_end) ** 2 + (pos_y - pos_y_end) ** 2) / 100)
         print("pos x : " + str(pos_x) + " pos y : " + str(pos_y) + " pos_x_end : " + str(pos_x_end) + " pos_y_end : " + str(pos_y_end))
         print("distance : " + str(distance))
         print("nombre moves : " + str(move))
         print("fitness : " + str(distance * move))
-
         self._fitness = distance * move
 
     def getter_fitness(self):
@@ -130,16 +118,12 @@ class Runner(object):
     def get_distance(self):
         diff_x = self._pos_x_2 - self._pos_x_1
         diff_y = self._pos_y_2 - self._pos_y_1
-
         pos_x = diff_x + self._pos_x_1
         pos_y = diff_y + self._pos_y_1
-
         diff_x_end = self._end[2] - self._end[0]
         diff_y_end = self._end[3] - self._end[1]
-
         pos_x_end = diff_x_end + self._end[0]
         pos_y_end = diff_y_end + self._end[3]
-
         distance = round(((pos_x - pos_x_end) ** 2 + (pos_y - pos_y_end) ** 2) / 100)
         return distance
 
